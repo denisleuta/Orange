@@ -3,6 +3,10 @@
 #include <vector>
 #include <cmath>
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 using namespace std;
 
 // Структура, представляющая вершину графа
@@ -57,8 +61,16 @@ void drawGraph(const vector<Vertex>& vertices, const string& filename) {
     }
 
     // Рисуем вершины
+    const int vertexRadius = 5; // Радиус вершины
     for (const auto& vertex : vertices) {
-        image[vertex.y - minY + 50][vertex.x - minX + 50] = true;
+        for (int i = -vertexRadius; i <= vertexRadius; ++i) {
+            for (int j = -vertexRadius; j <= vertexRadius; ++j) {
+                int x = vertex.x - minX + 50 + i;
+                int y = vertex.y - minY + 50 + j;
+                if (x >= 0 && x < width && y >= 0 && y < height)
+                    image[y][x] = true;
+            }
+        }
     }
 
     // Сохраняем изображение в файл BMP
@@ -112,22 +124,28 @@ void drawGraph(const vector<Vertex>& vertices, const string& filename) {
 }
 
 int main() {
-    // Создаём граф
-    vector<Vertex> graph = {
-        {50, 50, {1, 2, 3, 4}},      // Вершина 0
-        //{200, 50, {0, 2, 4}},        // Вершина 1
-        {350, 50, {0, 1, 3, 5}},     // Вершина 2
-        {50, 200, {0, 2, 4, 6}},     // Вершина 3
-        {200, 200, {0, 1, 3, 5, 6}}, // Вершина 4
-        {350, 200, {2, 4, 6}},       // Вершина 5
-        {200, 350, {3, 4, 5, 7, 8}}, // Вершина 6
-        {50, 350, {6, 8, 9}},        // Вершина 7
-        {200, 350, {6, 7, 9}},       // Вершина 8
-        {350, 350, {7, 8}}           // Вершина 9
-    };
+    // Создаём граф с 500 вершинами
+    vector<Vertex> graph;
+    const int numVertices = 500;
+    const double radius = 600;
+    const double centerX = 1280; // 2560 / 2
+    const double centerY = 960;  // 1920 / 2
+
+    for (int i = 0; i < numVertices; ++i) {
+        double angle = 2 * M_PI * i / numVertices;
+        double x = centerX + radius * cos(angle);
+        double y = centerY + radius * sin(angle);
+        graph.push_back({ x, y });
+    }
+
+    // Соединяем каждую вершину с двумя соседними
+    for (int i = 0; i < numVertices; ++i) {
+        graph[i].edges.push_back((i + 1) % numVertices);
+        graph[i].edges.push_back((i - 1 + numVertices) % numVertices);
+    }
 
     // Создаём изображение графа и сохраняем его
-    drawGraph(graph, "graph.bmp");
+    drawGraph(graph, "planar_graph.bmp");
 
     return 0;
 }
