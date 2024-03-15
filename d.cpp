@@ -124,24 +124,34 @@ void drawGraph(const vector<Vertex>& vertices, const string& filename) {
 }
 
 int main() {
-    // Создаём граф с 500 вершинами
+    // Создаем вершины внутри квадрата и добавляем некоторые внешние вершины
     vector<Vertex> graph;
-    const int numVertices = 500;
-    const double radius = 600;
-    const double centerX = 1280; // 2560 / 2
-    const double centerY = 960;  // 1920 / 2
+    const double squareSize = 400;
+    const double centerX = 640; // Центр квадрата
+    const double centerY = 480; // Центр квадрата
 
-    for (int i = 0; i < numVertices; ++i) {
-        double angle = 2 * M_PI * i / numVertices;
-        double x = centerX + radius * cos(angle);
-        double y = centerY + radius * sin(angle);
-        graph.push_back({ x, y });
+    // Внутренние вершины
+    for (double x = centerX - squareSize / 2 + 100; x <= centerX + squareSize / 2 - 100; x += 100) {
+        for (double y = centerY - squareSize / 2 + 100; y <= centerY + squareSize / 2 - 100; y += 100) {
+            graph.push_back({ x, y });
+        }
     }
 
-    // Соединяем каждую вершину с двумя соседними
-    for (int i = 0; i < numVertices; ++i) {
-        graph[i].edges.push_back((i + 1) % numVertices);
-        graph[i].edges.push_back((i - 1 + numVertices) % numVertices);
+    // Вершины на границе квадрата
+    for (double x = centerX - squareSize / 2; x <= centerX + squareSize / 2; x += squareSize) {
+        for (double y = centerY - squareSize / 2; y <= centerY + squareSize / 2; y += squareSize) {
+            graph.push_back({ x, y });
+        }
+    }
+
+    // Создаем соединения между вершинами внутри квадрата
+    for (int i = 0; i < graph.size(); ++i) {
+        for (int j = i + 1; j < graph.size(); ++j) {
+            if ((abs(graph[i].x - graph[j].x) <= 100 && abs(graph[i].y - graph[j].y) <= 100)) {
+                graph[i].edges.push_back(j);
+                graph[j].edges.push_back(i);
+            }
+        }
     }
 
     // Создаём изображение графа и сохраняем его
